@@ -16,8 +16,16 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 # different working directories.
 import os
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATABASE_URL = f"sqlite:///{os.path.join(BASE_DIR, 'meetings.db')}"
+DATABASE_PATH = os.environ.get("DATABASE_PATH")
+if DATABASE_PATH:
+    # Ensure parent directories exist (crucial for Render persistent disks)
+    db_dir = os.path.dirname(DATABASE_PATH)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
+    DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
+else:
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    DATABASE_URL = f"sqlite:///{os.path.join(BASE_DIR, 'meetings.db')}"
 
 # ---------------------------------------------------------------------------
 # Engine

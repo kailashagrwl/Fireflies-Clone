@@ -143,7 +143,8 @@ erDiagram
     ```
 4.  Configure environment variables in `.env`:
     ```env
-    DATABASE_URL=sqlite:///./meetings.db
+    # (Optional) Configurable path for SQLite db file (defaults to local meetings.db)
+    DATABASE_PATH=/absolute/path/to/meetings.db
     GEMINI_API_KEY=your_gemini_api_key_here
     LLM_PROVIDER=gemini
     OPENAI_MODEL=gemini-3.5-flash
