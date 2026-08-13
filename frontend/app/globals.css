@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+:root {
+  --bg-page: #0b0d12;
+  --bg-surface: #13151d;
+  --bg-elevated: #181b26;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: #e2e8f0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Light Theme Variables and Overrides */
+.theme-light {
+  --bg-page: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f1f5f9;
+}
+
+.theme-light body {
+  color: #0f172a;
+}
+
+.theme-light h1,
+.theme-light h2,
+.theme-light h3,
+.theme-light h4,
+.theme-light .text-white {
+  color: #0f172a !important;
+}
+
+.theme-light .text-slate-200,
+.theme-light .text-slate-300 {
+  color: #1e293b !important;
+}
+
+.theme-light .text-slate-400,
+.theme-light .text-slate-500 {
+  color: #475569 !important;
+}
+
+.theme-light .text-slate-600 {
+  color: #64748b !important;
+}
+
+.theme-light .border-white\/5,
+.theme-light .border-white\/6,
+.theme-light .border-white\/8,
+.theme-light .border-violet-500\/20 {
+  border-color: #cbd5e1 !important;
+}
+
+.theme-light .bg-white\/5,
+.theme-light .bg-white\/4,
+.theme-light .bg-white\/3 {
+  background-color: #e2e8f0 !important;
+}
+
+.theme-light [class~="bg-[#13151d]"],
+.theme-light [class~="bg-[#181b26]"] {
+  background-color: var(--bg-surface) !important;
+}
+
+.theme-light [class~="bg-[#0b0d12]"] {
+  background-color: var(--bg-page) !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2d3148; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #3d4168; }
+
+/* Scrollable containers */
+.scrollbar-thin { scrollbar-width: thin; scrollbar-color: #2d3148 transparent; }
+
+/* Smooth animations */
+* { box-sizing: border-box; }
+
+@keyframes slideIn {
+  from {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

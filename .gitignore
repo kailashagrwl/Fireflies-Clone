@@ -1,0 +1,32 @@
+# Python virtual environments and compile caches
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Node.js dependencies and Next.js builds
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Local databases and SQLite
+*.db
+*.sqlite3
+
+# Env files containing sensitive credentials/keys
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# Local IDE and System files
+.DS_Store
+.vscode/
+.idea/
+.agents/
+.gemini/
