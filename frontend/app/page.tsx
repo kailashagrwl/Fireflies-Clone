@@ -106,25 +106,58 @@ export default function HomePage() {
 
         {/* Video / Preview Card Mockup */}
         <div className="w-full md:w-80 lg:w-96 shrink-0 aspect-video md:aspect-auto md:h-48 rounded-2xl bg-white border border-slate-100 shadow-md p-4 flex flex-col justify-between overflow-hidden relative group hover:border-violet-200 transition-all duration-300">
-          {/* Mockup decoration */}
-          <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
-            <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-          </div>
-          <div className="my-auto space-y-2">
-            <div className="h-3 w-2/3 rounded-sm bg-slate-100" />
-            <div className="h-2.5 w-full rounded-sm bg-slate-50" />
-            <div className="h-2.5 w-4/5 rounded-sm bg-slate-50" />
-          </div>
+          <a
+            href="https://www.youtube.com/watch?v=uZuFXgNfZmI&t=1s"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative flex-1 min-h-0 w-full mb-3 rounded-xl bg-gradient-to-br from-amber-50 to-orange-100/60 p-1.5 flex flex-col justify-between overflow-hidden group/thumb cursor-pointer shadow-3xs border border-orange-200/40"
+          >
+            {/* Dark/black video frame */}
+            <div className="w-full h-full bg-slate-900 rounded-lg p-1 flex flex-col justify-between relative overflow-hidden">
+              {/* Purple Fireflies product-demo screen */}
+              <div className="w-full h-full bg-gradient-to-br from-violet-600 via-indigo-700 to-purple-800 rounded-md flex flex-col justify-between p-2 text-white relative">
+                
+                {/* Top header decoration */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[7.5px] font-bold text-white/90 bg-white/10 px-1.5 py-0.5 rounded backdrop-blur-xs font-sans">
+                    Fireflies Product Demo
+                  </span>
+                  <span className="text-[7.5px] text-white/60 font-sans">
+                    5:00
+                  </span>
+                </div>
+
+                {/* Centered purple play button overlay */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-600 text-white shadow-md transition-transform group-hover/thumb:scale-110 z-10">
+                    <Play className="h-4 w-4 fill-white ml-0.5 text-white" />
+                  </div>
+                </div>
+
+                {/* Lower left generic branding */}
+                <div className="flex items-center gap-1 z-10 mt-auto">
+                  <Sparkles className="h-3 w-3 text-violet-300 shrink-0" />
+                  <span className="text-[7.5px] font-bold tracking-wider uppercase font-sans text-white/90">
+                    fireflies.ai
+                  </span>
+                </div>
+              </div>
+            </div>
+          </a>
+
           <div className="flex items-center justify-between border-t border-slate-50 pt-2.5 text-[10px] text-slate-400">
             <span className="flex items-center gap-1">
               <Zap className="h-3 w-3 text-violet-500" />
               AI Summary Engine
             </span>
-            <span className="text-violet-600 font-bold flex items-center gap-0.5 group-hover:gap-1 transition-all">
+            <a
+              href="https://www.youtube.com/watch?v=uZuFXgNfZmI&t=1s"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-violet-600 font-bold flex items-center gap-0.5 group-hover:gap-1 transition-all"
+            >
               Watch Demo <ChevronRight className="h-3 w-3" />
-            </span>
+            </a>
           </div>
           {/* Overlay glow */}
           <div className="absolute -right-10 -bottom-10 w-24 h-24 bg-violet-400/10 rounded-full blur-xl pointer-events-none" />
