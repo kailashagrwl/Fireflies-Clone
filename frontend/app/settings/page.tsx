@@ -37,14 +37,12 @@ function Toggle({
       role="switch"
       aria-checked={enabled}
       onClick={() => onChange(!enabled)}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-[#13151d] ${
-        enabled ? 'bg-violet-600' : 'bg-slate-700'
-      }`}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-[#13151d] ${enabled ? 'bg-violet-600' : 'bg-slate-700'
+        }`}
     >
       <span
-        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition duration-200 ${
-          enabled ? 'translate-x-5' : 'translate-x-0'
-        }`}
+        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition duration-200 ${enabled ? 'translate-x-5' : 'translate-x-0'
+          }`}
       />
     </button>
   );
@@ -133,8 +131,8 @@ function DisabledRow({
 type ThemeOption = 'dark' | 'light' | 'system';
 
 const THEME_OPTIONS: { value: ThemeOption; label: string; icon: React.ElementType }[] = [
-  { value: 'dark',   label: 'Dark',   icon: Moon },
-  { value: 'light',  label: 'Light',  icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'light', label: 'Light', icon: Sun },
   { value: 'system', label: 'System', icon: Monitor },
 ];
 
@@ -170,7 +168,7 @@ export default function SettingsPage() {
   const [summaryDelivery, setSummaryDelivery] = useState(true);
 
   // ----- Appearance -----
-  const [theme, setTheme] = useState<ThemeOption>('dark');
+  const [theme, setTheme] = useState<ThemeOption>('light');
 
   // ----- API Connection Test -----
   const [connStatus, setConnStatus] = useState<ConnStatus>('idle');
@@ -189,7 +187,7 @@ export default function SettingsPage() {
     const savedSummary = localStorage.getItem('firefiles-summaryDelivery');
     if (savedSummary !== null) setSummaryDelivery(savedSummary === 'true');
 
-    const savedTheme = (localStorage.getItem('firefiles-theme') as ThemeOption | null) ?? 'dark';
+    const savedTheme = (localStorage.getItem('firefiles-theme') as ThemeOption | null) ?? 'light';
     setTheme(savedTheme);
     // applyTheme is already handled by ThemeInitializer on load; no need to call here
   }, []);
@@ -321,11 +319,10 @@ export default function SettingsPage() {
                   <button
                     key={value}
                     onClick={() => handleTheme(value)}
-                    className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
-                      active
+                    className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${active
                         ? 'border-violet-500/50 bg-violet-500/15 text-violet-300'
                         : 'border-white/8 bg-white/5 text-slate-400 hover:border-violet-500/30 hover:text-violet-300'
-                    }`}
+                      }`}
                   >
                     <Icon className="h-3.5 w-3.5" />
                     {label}

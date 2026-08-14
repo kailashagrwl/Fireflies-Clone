@@ -95,3 +95,51 @@ body {
   animation: slideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Sidebar transition and layout width rules */
+aside.sidebar-transition {
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-width-expanded {
+  width: 15rem; /* w-60 */
+}
+
+.sidebar-width-collapsed {
+  width: 4rem; /* w-16 */
+}
+
+/* Shift desktop content depending on sidebar state */
+body:not(.sidebar-collapsed) .content-shifted {
+  margin-left: 15rem; /* ml-60 */
+}
+
+body.sidebar-collapsed .content-shifted {
+  margin-left: 4rem; /* ml-16 */
+}
+
+/* Mobile responsive drawer styling */
+@media (max-width: 768px) {
+  body:not(.sidebar-collapsed) .content-shifted,
+  body.sidebar-collapsed .content-shifted {
+    margin-left: 0 !important;
+  }
+
+  aside.sidebar-transition {
+    transform: translateX(-100%);
+    width: 15rem !important; /* Forces full width drawer on mobile when active */
+  }
+
+  body.mobile-sidebar-open aside.sidebar-transition {
+    transform: translateX(0);
+  }
+
+  body.mobile-sidebar-open .mobile-backdrop {
+    display: block !important;
+  }
+
+  /* Hide tooltips on touch devices */
+  .group-hover\:opacity-100 {
+    display: none !important;
+  }
+}
+

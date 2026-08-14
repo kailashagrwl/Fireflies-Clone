@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { patchActionItem, deleteActionItem, createActionItem } from '@/lib/api';
 import ToastContainer, { type ToastMessage } from '@/components/Toast';
+import { addNotification } from '@/lib/utils';
 
 interface Props {
   meetingId: number;
@@ -100,6 +101,9 @@ export default function ActionItemsPanel({ meetingId, items: initial }: Props) {
         `Action item marked as ${updated.completed ? 'completed' : 'incomplete'}.`,
         'success'
       );
+      if (updated.completed) {
+        addNotification("Action item completed", `"${updated.title}" was marked as completed.`, meetingId);
+      }
     } catch (err) {
       addToast('Failed to update action item.', 'error');
     } finally {
@@ -136,6 +140,7 @@ export default function ActionItemsPanel({ meetingId, items: initial }: Props) {
       });
       setItems((prev) => [newItem, ...prev]);
       addToast('Action item created successfully.', 'success');
+      addNotification("New action item added", `"${newItem.title}" was added.`, meetingId);
       // Reset form
       setTitle('');
       setDescription('');

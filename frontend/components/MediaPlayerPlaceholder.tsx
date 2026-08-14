@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
-import { Play, Pause, Mic, Volume2, VolumeX, AlertCircle } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, AlertCircle } from 'lucide-react';
 import { formatTimestamp } from '@/lib/utils';
 
 interface Props {
@@ -16,97 +16,81 @@ export interface MediaPlayerRef {
 
 const MediaPlayer = forwardRef<MediaPlayerRef, Props>(({ title, durationSeconds, onTimeUpdate }, ref) => {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const simulationIntervalRef = useRef<number | null>(null);
+  const currentTimeRef = useRef<number>(0);
+
+  // Default sample audio track: local wav served from /public/audio/sample.wav
+  const defaultSampleUrl = '/audio/sample.wav';
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(durationSeconds ?? 0);
-  const [useSimulation, setUseSimulation] = useState(false);
   const [volume, setVolume] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
-  const [audioSource, setAudioSource] = useState<string>('');
+  const [audioSource, setAudioSource] = useState<string>(defaultSampleUrl);
 
-  // Fallback sample audio URL: SoundHelix test song
-  const defaultSampleUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-
+  // Sync virtual duration from props
   useEffect(() => {
     if (durationSeconds) {
       setDuration(durationSeconds);
     }
   }, [durationSeconds]);
 
-  // Clean up simulation interval on unmount
+  // Virtual clock runner when isPlaying is true
   useEffect(() => {
-    return () => {
-      if (simulationIntervalRef.current) {
-        window.clearInterval(simulationIntervalRef.current);
-      }
-    };
-  }, []);
+    if (!isPlaying) return;
 
-  const handleSimulatedTimeUpdate = useCallback((nextTime: number) => {
-    setCurrentTime(nextTime);
-    if (onTimeUpdate) {
-      onTimeUpdate(nextTime);
-    }
-  }, [onTimeUpdate]);
+    let animFrameId: number;
+    let lastTime = performance.now();
 
-  // Start simulation timer
-  const startSimulation = useCallback((startFrom: number) => {
-    if (simulationIntervalRef.current) {
-      window.clearInterval(simulationIntervalRef.current);
-    }
+    const tick = () => {
+      const now = performance.now();
+      const deltaSeconds = (now - lastTime) / 1000;
+      lastTime = now;
 
-    let simulatedTime = startFrom;
-    const intervalMs = 250; // update 4 times a second for smooth slider movement
-    const stepSeconds = intervalMs / 1000;
-
-    simulationIntervalRef.current = window.setInterval(() => {
-      simulatedTime += stepSeconds;
-      if (simulatedTime >= duration) {
-        simulatedTime = duration;
+      let next = currentTimeRef.current + deltaSeconds;
+      if (next >= duration) {
+        next = duration;
         setIsPlaying(false);
-        if (simulationIntervalRef.current) {
-          window.clearInterval(simulationIntervalRef.current);
+        if (audioRef.current) {
+          audioRef.current.pause();
         }
       }
-      handleSimulatedTimeUpdate(simulatedTime);
-    }, intervalMs);
-  }, [duration, handleSimulatedTimeUpdate]);
 
-  // Stop simulation timer
-  const stopSimulation = useCallback(() => {
-    if (simulationIntervalRef.current) {
-      window.clearInterval(simulationIntervalRef.current);
-      simulationIntervalRef.current = null;
-    }
-  }, []);
+      currentTimeRef.current = next;
+      setCurrentTime(next);
 
-  // Sync state when native audio plays or pauses
+      // Notify parent safely from outside render phase
+      if (onTimeUpdate) {
+        onTimeUpdate(next);
+      }
+
+      if (next < duration) {
+        animFrameId = requestAnimationFrame(tick);
+      }
+    };
+
+    animFrameId = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(animFrameId);
+    };
+  }, [isPlaying, duration, onTimeUpdate]);
+
+  // Synchronize playback of native audio element
   const playNative = useCallback(async () => {
     if (!audioRef.current) return;
     try {
-      if (!audioSource) {
-        // lazy load mock/sample track
-        setAudioSource(defaultSampleUrl);
-        // Wait for next tick so audio element has source set
-        setTimeout(async () => {
-          if (audioRef.current) {
-            await audioRef.current.play();
-            setIsPlaying(true);
-          }
-        }, 50);
-      } else {
-        await audioRef.current.play();
-        setIsPlaying(true);
+      // Seek native element to position relative to its duration before play
+      const realDur = audioRef.current.duration;
+      if (realDur && !isNaN(realDur) && realDur > 0) {
+        audioRef.current.currentTime = currentTimeRef.current % realDur;
       }
-    } catch (err) {
-      // Graceful fallback to simulation mode on error (e.g. offline or browser block)
-      setUseSimulation(true);
+      await audioRef.current.play();
       setIsPlaying(true);
-      startSimulation(currentTime);
+    } catch (err) {
+      console.warn('Native play failed or blocked by autoplay rules, virtual timeline is active.', err);
+      setIsPlaying(true);
     }
-  }, [audioSource, currentTime, startSimulation]);
+  }, []);
 
   const pauseNative = useCallback(() => {
     if (audioRef.current) {
@@ -117,66 +101,39 @@ const MediaPlayer = forwardRef<MediaPlayerRef, Props>(({ title, durationSeconds,
 
   const togglePlayPause = () => {
     if (isPlaying) {
-      if (useSimulation) {
-        stopSimulation();
-        setIsPlaying(false);
-      } else {
-        pauseNative();
-      }
+      pauseNative();
     } else {
-      if (useSimulation) {
-        setIsPlaying(true);
-        startSimulation(currentTime);
-      } else {
-        playNative();
-      }
-    }
-  };
-
-  const handleTimeUpdate = () => {
-    if (!audioRef.current || useSimulation) return;
-    const current = audioRef.current.currentTime;
-    setCurrentTime(current);
-    if (onTimeUpdate) {
-      onTimeUpdate(current);
+      playNative();
     }
   };
 
   const handleLoadedMetadata = () => {
-    if (!audioRef.current || useSimulation) return;
-    // Only overwrite duration if the file duration is valid
-    if (audioRef.current.duration && !isNaN(audioRef.current.duration)) {
+    if (!audioRef.current) return;
+    // Only overwrite duration if parent meeting did not provide duration_seconds
+    if (!durationSeconds && audioRef.current.duration && !isNaN(audioRef.current.duration)) {
       setDuration(audioRef.current.duration);
     }
-  };
-
-  const handleAudioError = () => {
-    // If the audio source fails, fallback immediately to simulation runner
-    setUseSimulation(true);
-    if (isPlaying) {
-      startSimulation(currentTime);
+    // Sync current time on metadata load
+    const realDur = audioRef.current.duration;
+    if (realDur && !isNaN(realDur) && realDur > 0) {
+      audioRef.current.currentTime = currentTimeRef.current % realDur;
     }
   };
 
   const handleSeek = (seconds: number) => {
     const boundSeconds = Math.max(0, Math.min(seconds, duration));
+    currentTimeRef.current = boundSeconds;
     setCurrentTime(boundSeconds);
     
-    if (useSimulation) {
-      if (isPlaying) {
-        startSimulation(boundSeconds);
-      } else {
-        if (onTimeUpdate) {
-          onTimeUpdate(boundSeconds);
-        }
+    if (audioRef.current) {
+      const realDur = audioRef.current.duration;
+      if (realDur && !isNaN(realDur) && realDur > 0) {
+        audioRef.current.currentTime = boundSeconds % realDur;
       }
-    } else {
-      if (audioRef.current) {
-        audioRef.current.currentTime = boundSeconds;
-      }
-      if (onTimeUpdate) {
-        onTimeUpdate(boundSeconds);
-      }
+    }
+
+    if (onTimeUpdate) {
+      onTimeUpdate(boundSeconds);
     }
   };
 
@@ -209,19 +166,16 @@ const MediaPlayer = forwardRef<MediaPlayerRef, Props>(({ title, durationSeconds,
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-white/6 bg-gradient-to-br from-[#181b26] to-[#111318] p-6">
-      {/* Hidden audio element */}
-      {audioSource && (
-        <audio
-          ref={audioRef}
-          src={audioSource}
-          onTimeUpdate={handleTimeUpdate}
-          onLoadedMetadata={handleLoadedMetadata}
-          onError={handleAudioError}
-        />
-      )}
+      {/* Hidden loop audio element */}
+      <audio
+        ref={audioRef}
+        src={audioSource}
+        loop
+        onLoadedMetadata={handleLoadedMetadata}
+      />
 
       {/* Waveform visualizer (interactive bars) */}
-      <div className="flex h-12 items-end gap-0.5 px-2">
+      <div className="flex h-12 w-full items-end gap-0.5 px-2">
         {Array.from({ length: 60 }).map((_, i) => {
           const height = 20 + 70 * Math.abs(Math.sin(i * 0.4 + 1.1));
           const active = i / 60 < pct / 100;
@@ -230,7 +184,7 @@ const MediaPlayer = forwardRef<MediaPlayerRef, Props>(({ title, durationSeconds,
               key={i}
               style={{ height: `${height}%` }}
               onClick={() => handleSeek((i / 60) * duration)}
-              className={`w-1 rounded-full transition-all cursor-pointer hover:scale-y-110 ${
+              className={`flex-1 rounded-full transition-all cursor-pointer hover:scale-y-110 ${
                 active ? 'bg-violet-500 hover:bg-violet-400' : 'bg-slate-700 hover:bg-slate-600'
               }`}
             />
@@ -276,14 +230,10 @@ const MediaPlayer = forwardRef<MediaPlayerRef, Props>(({ title, durationSeconds,
               {title}
             </span>
             <span className="text-[10px] text-slate-500 flex items-center gap-1">
-              {useSimulation ? (
-                <span className="text-amber-400/80 flex items-center gap-0.5">
-                  <AlertCircle className="h-3 w-3 shrink-0" />
-                  Simulated Audio Playback (Offline Fallback)
-                </span>
-              ) : (
-                <span>Interactive Media Player</span>
-              )}
+              <span className="text-amber-500 flex items-center gap-0.5 font-medium">
+                <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                Demo Audio Loop (Meeting recording placeholder)
+              </span>
             </span>
           </div>
         </div>
@@ -297,7 +247,7 @@ const MediaPlayer = forwardRef<MediaPlayerRef, Props>(({ title, durationSeconds,
           <div className="flex items-center gap-2">
             <button
               onClick={toggleMute}
-              className="text-slate-500 hover:text-slate-300 transition"
+              className="text-slate-500 hover:text-slate-305 transition"
               title={isMuted ? 'Unmute' : 'Mute'}
             >
               {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}

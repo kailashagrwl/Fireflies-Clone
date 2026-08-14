@@ -75,3 +75,34 @@ export function toLocalDatetimeString(iso: string | null): string {
   return `${Y}-${M}-${D}T${h}:${m}`;
 }
 
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  meetingId?: number | string;
+  read: boolean;
+  createdAt: string;
+}
+
+export function addNotification(title: string, message: string, meetingId?: number | string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const saved = localStorage.getItem('firefiles-notifications');
+    const list: AppNotification[] = saved ? JSON.parse(saved) : [];
+    
+    const newNotif: AppNotification = {
+      id: Math.random().toString(),
+      title,
+      message,
+      meetingId,
+      read: false,
+      createdAt: new Date().toISOString()
+    };
+    
+    localStorage.setItem('firefiles-notifications', JSON.stringify([newNotif, ...list]));
+    window.dispatchEvent(new Event('firefiles-notifications-updated'));
+  } catch (err) {
+    console.error('Failed to create notification', err);
+  }
+}
+

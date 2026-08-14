@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import Sidebar from '@/components/Sidebar';
+import Header from '@/components/Header';
 import ThemeInitializer from '@/components/ThemeInitializer';
 
 export const metadata: Metadata = {
@@ -15,13 +16,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-[#0b0d12]">
+    <html lang="en" className="theme-light">
+      <body className="min-h-screen bg-[#f8fafc] text-slate-800 antialiased font-sans">
         <ThemeInitializer />
-        <Sidebar />
-        {/* Main content pushed right of sidebar */}
-        <div className="ml-60">
-          {children}
+        <div className="flex min-h-screen">
+          <Sidebar />
+
+          <div className="flex-1 content-shifted transition-all duration-200 flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-1 p-6 lg:p-8">
+              {children}
+            </main>
+          </div>
         </div>
       </body>
     </html>

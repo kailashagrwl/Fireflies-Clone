@@ -16,7 +16,7 @@ interface Props {
 
 export default function ToastContainer({ toasts, onDismiss }: Props) {
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full">
+    <div className="fixed top-4 right-6 z-50 flex flex-col gap-2 max-w-sm w-full">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onDismiss={onDismiss} />
       ))}

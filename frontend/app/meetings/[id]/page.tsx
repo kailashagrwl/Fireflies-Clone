@@ -11,6 +11,7 @@ import {
   initials,
   avatarColor,
   toLocalDatetimeString,
+  addNotification,
 } from '@/lib/utils';
 import TranscriptPanel from '@/components/TranscriptPanel';
 import SummaryPanel from '@/components/SummaryPanel';
@@ -198,6 +199,7 @@ export default function MeetingDetailPage({
       const updated = await generateSummary(meeting.id);
       setMeeting(updated);
       addToast('AI summary generated successfully.', 'success');
+      addNotification('AI summary is ready', `AI summary for "${meeting.title}" is ready.`, meeting.id);
     } catch (err: any) {
       addToast(err.message || 'Failed to generate AI summary.', 'error');
     } finally {
@@ -213,6 +215,7 @@ export default function MeetingDetailPage({
       const updated = await regenerateSummary(meeting.id);
       setMeeting(updated);
       addToast('AI summary regenerated successfully.', 'success');
+      addNotification('Meeting summary was updated', `AI summary for "${meeting.title}" was updated.`, meeting.id);
     } catch (err: any) {
       addToast(err.message || 'Failed to regenerate AI summary.', 'error');
     } finally {
