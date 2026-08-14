@@ -34,6 +34,32 @@ async def lifespan(app: FastAPI):
     """Create all database tables on startup (idempotent)."""
     Base.metadata.create_all(bind=engine)
     print("✅  Database tables created / verified.")
+
+    # Check if we need to seed the database
+    from app.database import SessionLocal
+    from app.models import Meeting
+    
+    db = SessionLocal()
+    try:
+        meeting_count = db.query(Meeting).count()
+        if meeting_count == 0:
+            print("🌱 Meetings table is empty. Running database seed...")
+            import sys
+            import os
+            backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            if backend_dir not in sys.path:
+                sys.path.insert(0, backend_dir)
+            
+            from seed import seed_database
+            seed_database()
+            print("✅ Seeding completed successfully.")
+        else:
+            print(f"⏭️ Seeding skipped. Database already contains {meeting_count} meetings.")
+    except Exception as e:
+        print(f"❌ Error during startup seeding check: {e}")
+    finally:
+        db.close()
+
     yield
     # Shutdown: nothing to clean up for SQLite
 
